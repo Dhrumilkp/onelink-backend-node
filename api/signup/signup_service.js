@@ -32,17 +32,17 @@ module.exports = {
                         });
                         // Create new user
                         var current_date = new Date();
-                        let data = {
+                        let user_const_data = {
                             email: body.email,
                             emailVerified: false,
                             password: body.password_token,
-                            displayName: body.firstname +''+ body.lastname,
+                            displayName: body.firstname +' '+ body.lastname,
                             disabled: false,
                             subdomain_name : body.subdomain_name,
                             current_otp    : otp,
                             created_on     : current_date
                         }
-                        db.collection("mari_users").add(data)
+                        db.collection("mari_users").add(user_const_data)
                         .then(docRef => {
                             body.unique_id = docRef.id;
                             // Send email
@@ -71,11 +71,11 @@ module.exports = {
                             request
                                 .then((result) => {
                                     body.email_send_status = "success";
-                                    return callback(null,body);
+                                    return callback(null,user_const_data);
                                 })
                                 .catch((err) => {
                                     body.email_send_status = "failed";
-                                    return callback(null,body);
+                                    return callback(null,user_const_data);
                                 });
                         })
                         .catch(err => {
