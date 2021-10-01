@@ -70,5 +70,40 @@ module.exports = {
             }
         }
         getUser();
+    },
+    Verifyusersotp:(body,callback) =>{
+        var unique_id = body.id;
+        const checkOtp = async() => {
+            const UserData = db.collection('mari_users').doc(unique_id);
+            const result = await UserData.get();
+            if(result.data())
+            {   
+                const users_data = result.data();
+                if(users_data.current_otp !== body.otp)
+                {
+                    return callback(null,'wrong-otp');
+                }
+                else
+                {
+                    const UpdateAccountStatus = async() => {
+                        const UserData = db.collection('mari_users').doc(unique_id);
+                        let data = {
+                            emailVerified : true
+                        };
+                        const result = await UserData.update(data);
+                        if(result)
+                        {
+                            return callback(null,'otp-verified');
+                        }
+                    }
+                    UpdateAccountStatus();
+                }
+            }
+            else
+            {
+                return callback(null,'err');
+            }
+        }
+        checkOtp();
     }
 };

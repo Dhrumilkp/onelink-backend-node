@@ -31,6 +31,7 @@ module.exports = {
                             window:10
                         });
                         // Create new user
+                        var current_date = new Date();
                         let data = {
                             email: body.email,
                             emailVerified: false,
@@ -38,7 +39,8 @@ module.exports = {
                             displayName: body.firstname +''+ body.lastname,
                             disabled: false,
                             subdomain_name : body.subdomain_name,
-                            current_otp    : otp
+                            current_otp    : otp,
+                            created_on     : current_date
                         }
                         db.collection("mari_users").add(data)
                         .then(docRef => {

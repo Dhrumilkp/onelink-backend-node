@@ -1,5 +1,6 @@
 const {
-    SendVerificationOtp
+    SendVerificationOtp,
+    VerifyOtp
 } = require('./otp_controller');
 // TOKEN CHECK 
 const {
@@ -20,5 +21,5 @@ const otp_send_limit = rateLimit({
 
 // define routers here
 router.post("/send-otp",checkToken,otp_send_limit,SendVerificationOtp);
-
+router.post("/verify-otp",checkToken,otp_send_limit,VerifyOtp);
 module.exports = router;

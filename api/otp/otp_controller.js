@@ -1,5 +1,6 @@
 const {
-    CreateNewVerificationOTP
+    CreateNewVerificationOTP,
+    Verifyusersotp
 } = require('./otp_service');
 
 module.exports = {
@@ -24,6 +25,25 @@ module.exports = {
                 status: "success",
                 message: "New otp email has been sent to your register mail id"
             });
+        });
+    },
+    VerifyOtp:(req,res) => {
+        const body = req.body;
+        Verifyusersotp(body,(err,results) => {
+            if(results == "otp-verified")
+            {
+                return res.status(200).json({
+                    status: "success",
+                    message: "Your email has been verified"
+                });
+            }
+            if(results == "wrong-otp")
+            {
+                return res.status(500).json({
+                    status: "err",
+                    message: "Wrong otp"
+                });
+            }
         });
     }
 };
