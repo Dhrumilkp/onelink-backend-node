@@ -21,6 +21,13 @@ module.exports = {
                     message: "subdomain already in use, try some other name"
                 });
             }
+            if(results == "email_taken")
+            {
+                return res.status(403).json({
+                    status: "err",
+                    message: "email is already in use, try some other email"
+                });
+            }
             // Generate webtoken
             const jsontoken = sign({result:results.unique_id},process.env.JWT_KEY,{
                 expiresIn: "1h"
