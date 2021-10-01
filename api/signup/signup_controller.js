@@ -32,7 +32,9 @@ module.exports = {
             const jsontoken = sign({result:results.unique_id},process.env.JWT_KEY,{
                 expiresIn: "1h"
             });
-            delete results['password_token'];
+            delete results['password'];
+            delete results['current_otp'];
+            delete results['created_on'];
             return res.status(200).json({
                 status: "success",
                 message: "User created",

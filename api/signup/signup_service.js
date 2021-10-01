@@ -11,6 +11,8 @@ module.exports = {
     Createnewuser: (body, callback) => {
         // Check if subdomain is available
         const username = body.subdomain_name;
+        const salt = genSaltSync(10);
+        body.password_token = hashSync(body.password_token, salt);
         db.collection("mari_users").where('subdomain_name','==',username)
         .get()
         .then((snapshot) => {
