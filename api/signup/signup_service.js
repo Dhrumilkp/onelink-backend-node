@@ -17,71 +17,86 @@ var speakeasy = require("speakeasy");
 
 module.exports = {
     Createnewuser: (body, callback) => {
-        // Check if user exsist
-
-        // Create new user
-        admin.auth().createUser({
-                email: body.email,
-                emailVerified: false,
-                password: body.password_token,
-                displayName: body.firstname +''+ body.lastname,
-                disabled: false,
-            })
-            .then(function (userRecord) {
-                // Generate OTP
-                var secret = speakeasy.generateSecret({length: 20});
-                var otp = speakeasy.totp({
-                    secret: secret.base32,
-                    encoding: 'base32',
-                    digits:4,
-                    step: 60,
-                    window:10
-                });
-                console.log(otp);
-                // Send email 
-                const request = mailjet
-                    .post("send", {
-                        'version': 'v3.1'
-                    })
-                    .request({
-                        "Messages": [{
-                            "From": {
-                                "Email": "security-noreply@onelink.cards",
-                                "Name": "Onelink.cards"
-                            },
-                            "To": [{
-                                "Email": body.email,
-                                "Name": body.firstname +' '+ body.lastname
-                            }],
-                            "TemplateID": 2922706,
-                            "TemplateLanguage": true,
-                            "Subject": "[[data:firstname:" + body.firstname +' '+ body.lastname + "]] , your verification code is [[data:OTP:" + otp + "]]",
-                            "Variables": {
-                                "OTP": otp
-                            }
-                        }]
-                    })
-                request
-                    .then((result) => {
-                        let data = {
-                            subdomain_name : body.subdomain_name,
-                            current_otp    : otp
-                        }
-                        db.collection("mari_users").doc(userRecord.uid).set(data)
-                        .then(data => {
-                            body.unique_id = userRecord.uid;
-                            callback(null,body);
-                        })
-                        .catch(err => {
-                            callback(err);
-                        })
-                    })
-                    .catch((err) => {
-                        console.log(err);
+        // Check if subdomain is available
+        const username = body.subdomain_name;
+        db.collection("mari_users").where('subdomain_name','==',username)
+        .get()
+        .then((snapshot) => {
+            if(snapshot.empty)
+            {
+                // Create new user
+                admin.auth().createUser({
+                    email: body.email,
+                    emailVerified: false,
+                    password: body.password_token,
+                    displayName: body.firstname +''+ body.lastname,
+                    disabled: false,
+                })
+                .then(function (userRecord) {
+                    // Generate OTP
+                    var secret = speakeasy.generateSecret({length: 20});
+                    var otp = speakeasy.totp({
+                        secret: secret.base32,
+                        encoding: 'base32',
+                        digits:4,
+                        step: 60,
+                        window:10
                     });
-            })
-            .catch(function (error) {
-                callback(error);
-            });
+                    console.log(otp);
+                    // Send email 
+                    const request = mailjet
+                        .post("send", {
+                            'version': 'v3.1'
+                        })
+                        .request({
+                            "Messages": [{
+                                "From": {
+                                    "Email": "security-noreply@onelink.cards",
+                                    "Name": "Onelink.cards"
+                                },
+                                "To": [{
+                                    "Email": body.email,
+                                    "Name": body.firstname +' '+ body.lastname
+                                }],
+                                "TemplateID": 2922706,
+                                "TemplateLanguage": true,
+                                "Subject": "[[data:firstname:" + body.firstname +' '+ body.lastname + "]] , your verification code is [[data:OTP:" + otp + "]]",
+                                "Variables": {
+                                    "OTP": otp
+                                }
+                            }]
+                        })
+                    request
+                        .then((result) => {
+                            let data = {
+                                subdomain_name : body.subdomain_name,
+                                current_otp    : otp
+                            }
+                            db.collection("mari_users").doc(userRecord.uid).set(data)
+                            .then(data => {
+                                body.unique_id = userRecord.uid;
+                                callback(null,body);
+                            })
+                            .catch(err => {
+                                callback(err);
+                            })
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        });
+                })
+                .catch(function (error) {
+                    callback(error);
+                });
+                
+            }
+            else
+            {
+                return callback(null,'username_taken');
+            }
+        })
+        .catch((error) => {
+            console.log(error);
+        })      
     }
 };

@@ -11,7 +11,14 @@ module.exports = {
             {
                 return res.status(500).json({
                     status: "err",
-                    message: "Internal server err, please reach out to our support team on support@onelink.cards"
+                    message: "Internal server err, please reach out to our support team on "+process.env.SUPPORT_EMAIL+""
+                });
+            }
+            if(results == "username_taken")
+            {
+                return res.status(403).json({
+                    status: "err",
+                    message: "subdomain already in use, try some other name"
                 });
             }
             // Generate webtoken
