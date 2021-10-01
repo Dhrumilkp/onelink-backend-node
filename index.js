@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 // DEFINE ROUTERS PATH
 const signup = require('./api/signup/signup_router');
+const otp = require('./api/otp/otp_router');
 // SET JSON BODY AND SET ORIGIN HEADERS
 app.use(express.json());
 
@@ -19,7 +20,7 @@ app.get("/",(req,res) =>{
 });
 // Routes
 app.use("/signup", signup);
-
+app.use("/otp",otp);
 // Port
 const port = process.env.PORT || 3000;
 app.listen(port,() =>{

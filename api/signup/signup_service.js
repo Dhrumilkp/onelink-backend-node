@@ -1,12 +1,4 @@
-const admin = require('firebase-admin');
-const serviceAccount = require('../../service_account.json');
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
-const db = admin.firestore();
-db.settings({
-    timestampsInSnapshots: true
-});
+const db = require('../../config/db');
 const {
     genSaltSync,
     hashSync
@@ -24,26 +16,29 @@ module.exports = {
         .then((snapshot) => {
             if(snapshot.empty)
             {
+                // Generate otp for this user 
+                var secret = speakeasy.generateSecret({length: 20});
+                var otp = speakeasy.totp({
+                    secret: secret.base32,
+                    encoding: 'base32',
+                    digits:4,
+                    step: 60,
+                    window:10
+                });
                 // Create new user
-                admin.auth().createUser({
+                let data = {
                     email: body.email,
                     emailVerified: false,
                     password: body.password_token,
                     displayName: body.firstname +''+ body.lastname,
                     disabled: false,
-                })
-                .then(function (userRecord) {
-                    // Generate OTP
-                    var secret = speakeasy.generateSecret({length: 20});
-                    var otp = speakeasy.totp({
-                        secret: secret.base32,
-                        encoding: 'base32',
-                        digits:4,
-                        step: 60,
-                        window:10
-                    });
-                    console.log(otp);
-                    // Send email 
+                    subdomain_name : body.subdomain_name,
+                    current_otp    : otp
+                }
+                db.collection("mari_users").add(data)
+                .then(docRef => {
+                    body.unique_id = docRef.id;
+                    // Send email
                     const request = mailjet
                         .post("send", {
                             'version': 'v3.1'
@@ -68,27 +63,17 @@ module.exports = {
                         })
                     request
                         .then((result) => {
-                            let data = {
-                                subdomain_name : body.subdomain_name,
-                                current_otp    : otp
-                            }
-                            db.collection("mari_users").doc(userRecord.uid).set(data)
-                            .then(data => {
-                                body.unique_id = userRecord.uid;
-                                callback(null,body);
-                            })
-                            .catch(err => {
-                                callback(err);
-                            })
+                            body.email_send_status = "success";
+                            return callback(null,body);
                         })
                         .catch((err) => {
-                            console.log(err);
+                            body.email_send_status = "failed";
+                            return callback(null,body);
                         });
                 })
-                .catch(function (error) {
-                    callback(error);
-                });
-                
+                .catch(err => {
+                    console.log(err);
+                })
             }
             else
             {
