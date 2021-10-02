@@ -16,7 +16,7 @@ module.exports = {
             }
             if(results == 'email-fail')
             {
-                return res.status(500).json({
+                return res.status(200).json({
                     status: "err",
                     message: "Internal server err, please reach out to our support team on "+process.env.SUPPORT_EMAIL+""
                 });
@@ -39,7 +39,7 @@ module.exports = {
             }
             if(results == "wrong-otp")
             {
-                return res.status(500).json({
+                return res.status(200).json({
                     status: "err",
                     message: "Wrong otp"
                 });

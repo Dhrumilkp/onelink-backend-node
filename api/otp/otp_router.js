@@ -4,7 +4,7 @@ const {
 } = require('./otp_controller');
 // TOKEN CHECK 
 const {
-    checkToken
+    checkToken,
 } = require('../../auth/token_validation');
 const router = require('express').Router();
 const rateLimit = require('express-rate-limit');
