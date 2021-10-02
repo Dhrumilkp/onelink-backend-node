@@ -55,7 +55,7 @@ module.exports = {
                 if (data == false) {
                     // Subdomain is available
                     // Create user in auth
-                    let displayName = body.firstname + +body.lastname;
+                    let displayName = body.firstname + + body.lastname;
                     admin.auth().createUser({
                             email: body.email,
                             emailVerified: false,
