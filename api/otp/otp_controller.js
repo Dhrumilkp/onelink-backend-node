@@ -44,6 +44,13 @@ module.exports = {
                     message: "Wrong otp"
                 });
             }
+            if(err)
+            {
+                return res.status(500).json({
+                    status: "err",
+                    message: "Internal server err, please reach out to our support team on "+process.env.SUPPORT_EMAIL+""
+                });
+            }
         });
     }
 };

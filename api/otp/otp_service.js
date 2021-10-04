@@ -5,33 +5,30 @@ var speakeasy = require("speakeasy");
 
 async function sendotpemail(email, otp, displayName) {
     const request = await mailjet
-            .post("send", {
-                'version': 'v3.1'
-            })
-            .request({
-                "Messages": [{
-                    "From": {
-                        "Email": "security-noreply@onelink.cards",
-                        "Name": "Onelink.cards"
-                    },
-                    "To": [{
-                        "Email": email,
-                        "Name": displayName
-                    }],
-                    "TemplateID": 2922706,
-                    "TemplateLanguage": true,
-                    "Subject": "[[data:firstname:" + displayName + "]] , your verification code is [[data:OTP:" + otp + "]]",
-                    "Variables": {
-                        "OTP": otp
-                    }
-                }]
-            })
-    if(request)
-    {
+        .post("send", {
+            'version': 'v3.1'
+        })
+        .request({
+            "Messages": [{
+                "From": {
+                    "Email": "security-noreply@onelink.cards",
+                    "Name": "Onelink.cards"
+                },
+                "To": [{
+                    "Email": email,
+                    "Name": displayName
+                }],
+                "TemplateID": 2922706,
+                "TemplateLanguage": true,
+                "Subject": "[[data:firstname:" + displayName + "]] , your verification code is [[data:OTP:" + otp + "]]",
+                "Variables": {
+                    "OTP": otp
+                }
+            }]
+        })
+    if (request) {
         return true;
-    }
-    else
-    {
+    } else {
         return false;
     }
 }
@@ -84,6 +81,36 @@ module.exports = {
             });
     },
     Verifyusersotp: (body, callback) => {
+        const unique_id = body.id;
+        const otp = body.otp;
+        const getusersdata = async () => {
+            const cityRef = db.collection('mari_users').doc(unique_id);
+            const doc = await cityRef.get();
+            if (!doc.exists) {
+                console.log('No such document!');
+            } else {
+                const user_doc_data = doc.data();
+                const current_otp = user_doc_data.current_otp;
+                if (current_otp == otp) {
+                    // update user
+                    admin
+                        .auth()
+                        .updateUser(unique_id, {
+                            emailVerified: true,
+                        })
+                        .then((userRecord) => {
+                            // See the UserRecord reference doc for the contents of userRecord.
+                            callback(null,'otp-verified');
+                        })
+                        .catch((error) => {
+                            callback(error);
+                        });
+                } else {
+                    callback(null, 'wrong-otp');
+                }
+            }
+        }
+        getusersdata();
 
     }
 };
