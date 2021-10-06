@@ -5,8 +5,6 @@ var speakeasy = require("speakeasy");
 
 module.exports = {
     BasicSignIn:(body,callback) => {
-       const email = body.email;
-       const password = body.password;
        
     }
 };
